@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -15,6 +16,7 @@ async function bootstrap(): Promise<void> {
     }),
   );
   app.useBodyParser('json', { limit: '100kb' });
+  app.enableShutdownHooks();
   const port = Number(process.env.PORT ?? 3100);
   await app.listen(port);
 }

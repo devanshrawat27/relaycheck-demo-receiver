@@ -1,11 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { IsIn, IsInt, IsNotEmpty, IsISO8601, IsPositive, IsString, Length } from 'class-validator';
+import { DemoEventResult, WebhooksService } from './webhooks.service';
 
-/**
- * `payment.succeeded` event delivered to the demo webhook receiver.
- * `eventId` is the stable idempotency key source used in the next task;
- * this skeleton only validates the payload (no persistence yet).
- */
+/** `payment.succeeded` event delivered to the demo webhook receiver. */
 export class DemoEventDto {
   @IsString()
   @IsNotEmpty()
@@ -30,18 +27,14 @@ export class DemoEventDto {
   occurredAt!: string;
 }
 
-export interface DemoEventResult {
-  accepted: boolean;
-  eventId: string;
-  processed: boolean;
-}
+export type { DemoEventResult };
 
 @Controller('webhooks')
 export class WebhooksController {
+  constructor(private readonly webhooks: WebhooksService) {}
+
   @Post('demo')
-  handleDemo(@Body() event: DemoEventDto): DemoEventResult {
-    // No persistence here yet — idempotent processing lands with the
-    // unique (consumerName, eventId) constraint in the following task.
-    return { accepted: true, eventId: event.eventId, processed: false };
+  handleDemo(@Body() event: DemoEventDto): Promise<DemoEventResult> {
+    return this.webhooks.processDemoEvent(event);
   }
 }

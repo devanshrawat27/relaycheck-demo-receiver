@@ -1,21 +1,28 @@
+import 'dotenv/config';
+import { randomUUID } from 'crypto';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
 describe('Demo receiver skeleton (e2e)', () => {
   let app: INestApplication;
+  let prisma: PrismaClient;
 
+  const eventId = `evt_val_${randomUUID()}`;
+  const orderId = `ord_val_${randomUUID()}`;
   const validEvent = {
-    eventId: 'evt_01TEST0000000000000000000001',
+    eventId,
     eventType: 'payment.succeeded',
-    orderId: 'order_test_0001',
+    orderId,
     amount: 4200,
     currency: 'USD',
     occurredAt: new Date().toISOString(),
   };
 
   beforeAll(async () => {
+    prisma = new PrismaClient();
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api');
@@ -26,6 +33,10 @@ describe('Demo receiver skeleton (e2e)', () => {
   });
 
   afterAll(async () => {
+    await prisma.businessEffect.deleteMany({ where: { orderId } });
+    await prisma.demoOrder.deleteMany({ where: { id: orderId } });
+    await prisma.processedEvent.deleteMany({ where: { eventId } });
+    await prisma.$disconnect();
     await app.close();
   });
 
@@ -42,8 +53,9 @@ describe('Demo receiver skeleton (e2e)', () => {
 
     expect(res.body).toEqual({
       accepted: true,
-      eventId: validEvent.eventId,
-      processed: false,
+      eventId,
+      processed: true,
+      duplicate: false,
     });
   });
 
