@@ -1,0 +1,12 @@
+{
+  "name": "@relaycheck/demo-receiver",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RelayCheck Demo Webhook Receiver - separate NestJS application under test. Owns demo business tables, persistent idempotency, and test-only fault behavior that fails closed outside local/test mode.",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
