@@ -14,15 +14,25 @@ Ownership boundaries (see `ARCHITECTURE.md` at the workspace root):
 - Does not process real payments and does not write RelayCheck platform
   tables.
 
-Status: workspace initialized (T001). Implementation starts at T010.
-Tasks and acceptance criteria live in `TASKS.md` at the workspace root.
+Status: skeleton implemented and verified — health endpoint, webhook intake
+with strict DTO validation, and the Prisma business-models schema. Persistent
+idempotency (unique constraint + atomic transaction) is wired in next; the
+webhook currently reports `processed: false`.
+
+## Endpoints
+
+- `GET /api/health` — service health.
+- `POST /api/webhooks/demo` — validates a `payment.succeeded` event:
+  `eventId` (stable ID), `orderId`, `amount` (positive integer minor units),
+  `currency` (3 letters), `occurredAt` (ISO 8601). Unknown or extra fields
+  and unsupported event types are rejected with 400.
 
 ## Commands
 
-- `npm install` - install dependencies (verified from a clean checkout).
-
-`npm run type-check`, `npm run build`, `npm run test`, and `npm run lint` are
-added when their service's phase task lands (see `TASKS.md`). No placeholder
-scripts are included, so nothing here fails silently.
+- `npm install` / `npm ci` — install dependencies.
+- `npm run lint` — ESLint (strict TS rules, no `any`).
+- `npm run type-check` — strict TypeScript check.
+- `npm test` — Jest + Supertest e2e suite (validation accept/reject).
+- `npm run build` / `npm start` / `npm run start:dev` — build and run on port 3100.
 
 Package manager: **npm** (lockfiles are committed). Node >= 20.
