@@ -40,7 +40,9 @@ enforced solely by the unique `(consumerName, eventId)` key on
 ## Setup
 
 1. Start PostgreSQL (see the workspace root README).
-2. `cp .env.example .env`.
+2. `cp .env.example .env` — this service owns **its own database**
+   (`relaycheck_demo` by default); it never touches RelayCheck platform
+   tables.
 3. `npm ci && npm run db:migrate`.
 
 ## Commands
