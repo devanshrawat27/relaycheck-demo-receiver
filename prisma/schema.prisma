@@ -20,7 +20,7 @@ model DemoOrder {
 }
 
 model ProcessedEvent {
-  id           BigInt   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   consumerName String
   eventId      String
   processedAt  DateTime @default(now())
@@ -30,7 +30,7 @@ model ProcessedEvent {
 }
 
 model BusinessEffect {
-  id        BigInt   @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   orderId   String
   effect    String
   appliedAt DateTime @default(now())

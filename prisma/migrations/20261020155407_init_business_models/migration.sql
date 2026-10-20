@@ -10,7 +10,7 @@ CREATE TABLE "public"."demo_orders" (
 
 -- CreateTable
 CREATE TABLE "public"."processed_events" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "consumerName" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
     "processedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -20,7 +20,7 @@ CREATE TABLE "public"."processed_events" (
 
 -- CreateTable
 CREATE TABLE "public"."business_effects" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "orderId" TEXT NOT NULL,
     "effect" TEXT NOT NULL,
     "appliedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -32,4 +32,4 @@ CREATE TABLE "public"."business_effects" (
 CREATE UNIQUE INDEX "processed_events_consumerName_eventId_key" ON "public"."processed_events"("consumerName", "eventId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "business_effects_orderId_key" ON "public"."business_effects"("orderId");
+CREATE INDEX "business_effects_orderId_idx" ON "public"."business_effects"("orderId");
