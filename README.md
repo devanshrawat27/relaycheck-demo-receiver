@@ -14,14 +14,14 @@ Ownership boundaries (see `ARCHITECTURE.md` at the workspace root):
 - Does not process real payments and does not write RelayCheck platform
   tables.
 
-Status: test oracle implemented and verified (2026-10-20).
-Three repeated HTTP deliveries of one event ID result in exactly one
-`processed_events` row, one `demo_orders` row, and one `business_effects`
-row; duplicates are answered with `{ processed: false, duplicate: true }`.
-Concurrent duplicate deliveries behave identically (unique `(consumerName,
-eventId)` constraint + single atomic transaction). The test oracle exposes
-only minimum assertion state and fails closed unless
-`RELAYCHECK_TEST_MODE=true`.
+Status: regression-proof fixture verified (2026-10-20). The receiver is
+idempotent by unique constraint + atomic transaction; a test-only fixture
+(`test/fixtures/broken-webhooks.service.ts`, injected via Nest provider
+override, never shipped in src/) proves the business-effect assertion fails
+for a deliberately non-idempotent implementation and passes for the real
+one. `business_effects` is an append-only evidence table; idempotency is
+enforced solely by the unique `(consumerName, eventId)` key on
+`processed_events`.
 
 ## Endpoints
 
@@ -50,7 +50,8 @@ only minimum assertion state and fails closed unless
 - `npm run lint` — ESLint (strict TS rules, no `any`).
 - `npm run type-check` — strict TypeScript check.
 - `npm test` — Jest + Supertest e2e suites (validation + idempotency,
-  including concurrent duplicate deliveries).
+  including concurrent duplicate deliveries, test-mode gating, and the
+  non-idempotent regression fixture).
 - `npm run build` / `npm start` / `npm run start:dev` — build and run on port 3100.
 
 Package manager: **npm** (lockfiles are committed). Node >= 20.

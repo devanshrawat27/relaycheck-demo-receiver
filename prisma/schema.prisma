@@ -31,9 +31,10 @@ model ProcessedEvent {
 
 model BusinessEffect {
   id        BigInt   @id @default(autoincrement())
-  orderId   String   @unique
+  orderId   String
   effect    String
   appliedAt DateTime @default(now())
 
+  @@index([orderId])
   @@map("business_effects")
 }
