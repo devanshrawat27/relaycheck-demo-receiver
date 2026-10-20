@@ -14,12 +14,14 @@ Ownership boundaries (see `ARCHITECTURE.md` at the workspace root):
 - Does not process real payments and does not write RelayCheck platform
   tables.
 
-Status: persistent idempotency implemented and verified (2026-10-20).
+Status: test oracle implemented and verified (2026-10-20).
 Three repeated HTTP deliveries of one event ID result in exactly one
 `processed_events` row, one `demo_orders` row, and one `business_effects`
 row; duplicates are answered with `{ processed: false, duplicate: true }`.
 Concurrent duplicate deliveries behave identically (unique `(consumerName,
-eventId)` constraint + single atomic transaction).
+eventId)` constraint + single atomic transaction). The test oracle exposes
+only minimum assertion state and fails closed unless
+`RELAYCHECK_TEST_MODE=true`.
 
 ## Endpoints
 
@@ -30,6 +32,10 @@ eventId)` constraint + single atomic transaction).
   fields and unsupported event types are rejected with 400. Responses:
   `{ accepted: true, eventId, processed: true, duplicate: false }` on first
   delivery and `{ ..., processed: false, duplicate: true }` for repeats.
+- `GET /api/__test__/orders/:orderId` — **test oracle** (minimum state:
+  order status + business-effect count). Registered ONLY when
+  `RELAYCHECK_TEST_MODE=true`; otherwise the route does not exist (404).
+  Verified fail-closed for both `false` and unset in e2e tests.
 
 ## Setup
 

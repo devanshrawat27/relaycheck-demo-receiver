@@ -25,7 +25,7 @@ describe('Persistent idempotency (e2e)', () => {
 
   beforeAll(async () => {
     prisma = new PrismaClient();
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule.root()] }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api');
     app.useGlobalPipes(

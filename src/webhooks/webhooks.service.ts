@@ -35,7 +35,12 @@ export class WebhooksService {
           data: { consumerName: DEMO_CONSUMER_NAME, eventId: event.eventId },
         });
         await tx.demoOrder.create({
-          data: { id: event.orderId, amount: event.amount, currency: event.currency },
+          data: {
+            id: event.orderId,
+            status: 'PAID',
+            amount: event.amount,
+            currency: event.currency,
+          },
         });
         await tx.businessEffect.create({
           data: { orderId: event.orderId, effect: 'ORDER_PAID' },
