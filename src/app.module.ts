@@ -1,6 +1,8 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { HealthController } from './health/health.controller';
 import { PrismaModule } from './prisma/prisma.module';
+import { FaultsModule } from './test-controls/faults.module';
+import { TestControlsModule } from './test-controls/test-controls.module';
 import { TestOracleModule } from './test-oracle/test-oracle.module';
 import { WebhooksController } from './webhooks/webhooks.controller';
 import { WebhooksService } from './webhooks/webhooks.service';
@@ -14,13 +16,17 @@ export function isTestModeEnabled(): boolean {
 export class AppModule {
   /**
    * Assembled at call time so test-mode gating is re-read every time the
-   * application (or a test module) is created — the oracle module is
-   * included only when test mode is explicitly enabled.
+   * application (or a test module) is created — the oracle and fault-control
+   * modules are included only when test mode is explicitly enabled.
    */
   static root(): DynamicModule {
     return {
       module: AppModule,
-      imports: [PrismaModule, ...(isTestModeEnabled() ? [TestOracleModule] : [])],
+      imports: [
+        PrismaModule,
+        FaultsModule,
+        ...(isTestModeEnabled() ? [TestOracleModule, TestControlsModule] : []),
+      ],
       controllers: [HealthController, WebhooksController],
       providers: [WebhooksService],
     };

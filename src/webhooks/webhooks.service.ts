@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { FaultsService } from '../test-controls/faults.service';
 import { DemoEventDto } from './webhooks.controller';
 
 export interface DemoEventResult {
@@ -26,9 +27,26 @@ export const DEMO_CONSUMER_NAME = 'relaycheck-demo';
 export class WebhooksService {
   private readonly logger = new Logger(WebhooksService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly faults: FaultsService,
+  ) {}
 
   async processDemoEvent(event: DemoEventDto): Promise<DemoEventResult> {
+    // Test-only fault injection. Defaults to off; only settable through the
+    // test-gated control endpoints. An `error` fault must not apply the
+    // business effect at all; a `delay` fault applies it after the delay.
+    const fault = this.faults.current();
+    if (fault.mode === 'error') {
+      throw new HttpException(
+        'Injected fault: controlled receiver failure',
+        fault.httpStatus ?? 503,
+      );
+    }
+    if (fault.mode === 'delay') {
+      await new Promise((resolve) => setTimeout(resolve, fault.delayMs ?? 1000));
+    }
+
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.processedEvent.create({

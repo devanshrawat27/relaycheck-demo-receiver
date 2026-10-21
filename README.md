@@ -36,6 +36,13 @@ enforced solely by the unique `(consumerName, eventId)` key on
   order status + business-effect count). Registered ONLY when
   `RELAYCHECK_TEST_MODE=true`; otherwise the route does not exist (404).
   Verified fail-closed for both `false` and unset in e2e tests.
+- `GET|POST|DELETE /api/__test__/faults` — **fault controls** (test mode
+  only). `POST { "mode": "error", "httpStatus": 503 }` makes webhook intake
+  fail without applying the business effect; `POST { "mode": "delay",
+  "delayMs": 300 }` delays the response then processes normally;
+  `DELETE` clears the fault. Bounds: `httpStatus` 400–599, `delayMs`
+  0–10000 ms (also clamped server-side). Fault state is in-memory and
+  resets to `off` on restart; outside test mode the routes return 404.
 
 ## Setup
 
