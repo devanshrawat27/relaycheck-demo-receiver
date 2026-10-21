@@ -13,6 +13,25 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: relaycheck
+          POSTGRES_PASSWORD: relaycheck
+          POSTGRES_DB: relaycheck_demo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U relaycheck -d relaycheck_demo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: postgresql://relaycheck:relaycheck@localhost:5432/relaycheck_demo
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,6 +44,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
 
       - name: Type check (if present)
         run: npm run type-check --if-present
