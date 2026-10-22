@@ -16,12 +16,12 @@ export class FaultsController {
   }
 
   @Post()
-  set(@Body() dto: SetFaultDto): FaultConfig {
+  set(@Body() dto: SetFaultDto): Promise<FaultConfig> {
     return this.faults.set(dto);
   }
 
   @Delete()
-  reset(): FaultConfig {
+  reset(): Promise<FaultConfig> {
     return this.faults.reset();
   }
 }

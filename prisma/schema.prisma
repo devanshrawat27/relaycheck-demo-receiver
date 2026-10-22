@@ -38,3 +38,16 @@ model BusinessEffect {
   @@index([orderId])
   @@map("business_effects")
 }
+
+// Test-only fault state. Persisted so a receiver restart does not silently
+// lose a configured fault, but time-bounded so a forgotten fault always heals.
+model FaultConfig {
+  id         Int      @id @default(1)
+  mode       String
+  httpStatus Int?
+  delayMs    Int?
+  expiresAt  DateTime?
+  updatedAt  DateTime @updatedAt
+
+  @@map("fault_config")
+}

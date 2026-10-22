@@ -116,6 +116,47 @@ describe('Controlled receiver faults, test-mode gated (e2e)', () => {
       await request(app.getHttpServer()).post('/api/webhooks/demo').send(payload).expect(201);
     });
 
+    it('restores a persisted fault after a restart', async () => {
+      await request(app.getHttpServer())
+        .post('/api/__test__/faults')
+        .send({ mode: 'error', httpStatus: 500 })
+        .expect(201);
+
+      const restarted = await boot();
+      try {
+        const res = await request(restarted.getHttpServer())
+          .get('/api/__test__/faults')
+          .expect(200);
+        expect(res.body.mode).toBe('error');
+        expect(res.body.httpStatus).toBe(500);
+      } finally {
+        await restarted.close();
+      }
+    });
+
+    it('auto-expires a persisted fault', async () => {
+      await request(app.getHttpServer())
+        .post('/api/__test__/faults')
+        .send({ mode: 'error', httpStatus: 500 })
+        .expect(201);
+
+      // Simulate a fault whose TTL elapsed while the receiver was down.
+      await prisma.faultConfig.update({
+        where: { id: 1 },
+        data: { expiresAt: new Date(Date.now() - 1000) },
+      });
+
+      const restarted = await boot();
+      try {
+        const res = await request(restarted.getHttpServer())
+          .get('/api/__test__/faults')
+          .expect(200);
+        expect(res.body.mode).toBe('off');
+      } finally {
+        await restarted.close();
+      }
+    });
+
     it('rejects out-of-range fault parameters', async () => {
       await request(app.getHttpServer())
         .post('/api/__test__/faults')

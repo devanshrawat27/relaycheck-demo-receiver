@@ -41,8 +41,10 @@ enforced solely by the unique `(consumerName, eventId)` key on
   fail without applying the business effect; `POST { "mode": "delay",
   "delayMs": 300 }` delays the response then processes normally;
   `DELETE` clears the fault. Bounds: `httpStatus` 400–599, `delayMs`
-  0–10000 ms (also clamped server-side). Fault state is in-memory and
-  resets to `off` on restart; outside test mode the routes return 404.
+  0–10000 ms (also clamped server-side). Fault state is **persisted** in
+  `fault_config` so a receiver restart keeps it, and it **auto-expires**
+  after `FAULT_TTL_MS` (default 5 minutes) so a forgotten fault heals itself.
+  Outside test mode the routes return 404.
 
 ## Setup
 
